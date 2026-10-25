@@ -2,7 +2,7 @@
 export default function Login(){
     return(
         <>
-            <div className="bg-white p-4 rounded-sm flex flex-col m-auto w-3/6 h-72 align-middle items-center">
+            <div className="bg-white p-4 rounded-sm flex flex-col m-auto w-2/6 h-72 align-middle items-center">
                 <span className="text-stone-700 text-2xl font-bold">Bienvenido!</span>
                 <span className="text-stone-600 text-xl mt-0">Ingrese sus datos de empleado.</span>
                 <form className="flex flex-col w-full h-full">
