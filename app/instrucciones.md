@@ -1,0 +1,4 @@
+La pagina de fazze debe tener un login en el cual el numero de empleado no debe tener con el cual incrementar y disminuir el numero es decir que solo la persona inserte el numero.
+debe marcar errorres en los cuales si se incerta un mal dato en cualquiera de los campos, que al iniciar sesion cambide de interfaz es decir que nos mande a una donde se pueda ver una barra de opciones donde nos muestre en la derecha lo principal.
+en la barra de opciones debe de tener inicio, clientes y sus vehiculos, ordenes de servicio, pagos, recordatorios y el expediente del vehiculo.
+y estos van a dar una interfaz, en la de inicio debe mostrar ordenes abiertas saldo por cobrar los recordatorios pendientes las ordenes en proceso y los proximos recordatorios, en clientes y vehicullos debe haber una manera de agregar un nuevo cliente es decir que se pueda insertar los campos e igualuno de vehiculo aparte que muestre una tabla abajo con los clientes actuales y tambien los vehiculos

@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -20,28 +19,115 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const supabase = createClient();
     setIsLoading(true);
     setError(null);
 
+    const user = usuario.trim();
+    const pass = contrasena.trim();
+
+    if (!user) {
+      setError("El usuario es obligatorio.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (!pass) {
+      setError("La contraseña es obligatoria.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      // Update this route to redirect to an authenticated route. The user already has an active session.
-      router.push("/protected");
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      const { data: empleado, error: empleadoError } = await supabase
+        .from("empleado")
+        .select("id_empleado, nombre, ap_paterno, ap_materno, rol, activo, contrasena")
+        .eq("nombre", user)
+        .maybeSingle();
+
+      if (empleadoError) {
+        setError("Error al conectar con Supabase.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!empleado) {
+        const { data: empleado2 } = await supabase
+          .from("empleado")
+          .select("id_empleado, nombre, ap_paterno, ap_materno, rol, activo, contrasena")
+          .ilike("nombre", user)
+          .maybeSingle();
+
+        if (!empleado2) {
+          setError("Usuario o contraseña incorrectos.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (empleado2.activo === false) {
+          setError("Este usuario se encuentra inactivo.");
+          setIsLoading(false);
+          return;
+        }
+
+        if (empleado2.contrasena !== pass) {
+          setError("Usuario o contraseña incorrectos.");
+          setIsLoading(false);
+          return;
+        }
+
+        const sessionData2 = {
+          id_empleado: empleado2.id_empleado,
+          nombre: empleado2.nombre,
+          ap_paterno: empleado2.ap_paterno,
+          ap_materno: empleado2.ap_materno,
+          rol: empleado2.rol,
+        };
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem("fazee_empleado", JSON.stringify(sessionData2));
+        }
+        router.push("/inicio");
+        router.refresh();
+        setIsLoading(false);
+        return;
+      }
+
+      if (empleado.activo === false) {
+        setError("Este usuario se encuentra inactivo.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (empleado.contrasena !== pass) {
+        setError("Usuario o contraseña incorrectos.");
+        setIsLoading(false);
+        return;
+      }
+
+      const sessionData = {
+        id_empleado: empleado.id_empleado,
+        nombre: empleado.nombre,
+        ap_paterno: empleado.ap_paterno,
+        ap_materno: empleado.ap_materno,
+        rol: empleado.rol,
+      };
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("fazee_empleado", JSON.stringify(sessionData));
+      }
+      router.push("/inicio");
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error al iniciar sesión.");
     } finally {
       setIsLoading(false);
     }
@@ -51,56 +137,41 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Inicio de sesión</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Ingresa tu usuario y contraseña
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="usuario">Usuario</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
+                  id="usuario"
+                  type="text"
+                  placeholder="Ingresa tu usuario"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  autoComplete="username"
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/auth/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input
                   id="password"
                   type="password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={contrasena}
+                  onChange={(e) => setContrasena(e.target.value)}
+                  autoComplete="current-password"
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Ingresando..." : "Ingresar"}
               </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
-                Sign up
-              </Link>
             </div>
           </form>
         </CardContent>
