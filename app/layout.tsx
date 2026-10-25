@@ -9,13 +9,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-<<<<<<< Updated upstream
-  title: "FAZEE",
-  description: "Gestor de Taller Vehicular",
-=======
   title: "Fazee - Taller Mecánico",
   description: "Sistema de gestión para taller mecánico",
->>>>>>> Stashed changes
 };
 
 const geistSans = Geist({
